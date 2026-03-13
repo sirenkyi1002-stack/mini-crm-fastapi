@@ -1,28 +1,20 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from db import SessionLocal, Base, engine, get_db
 
 app = FastAPI()
 
-# Список клієнтів (fake data)
-clients = [
-    {"id": 1, "name": "Artem", "email": "artem@gmail.com"},
-    {"id": 2, "name": "Olena", "email": "olena@gmail.com"},
-    {"id": 3, "name": "Ivan", "email": "ivan@gmail.com"},
-]
+# Створюємо таблиці (якщо їх ще немає)
+Base.metadata.create_all(bind=engine)
 
-# Головна сторінка
 @app.get("/")
-def read_root():
-    return {"message": "Mini CRM працює"}
+def read_root(db: Session = Depends(get_db)):
+    return {"message": "Database connected!"}
 
-# Список усіх клієнтів
-@app.get("/clients")
-def get_clients():
-    return clients
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
-# Один клієнт по id
-@app.get("/clients/{client_id}")
-def get_client(client_id: int):
-    for client in clients:
-        if client["id"] == client_id:
-            return client
-    raise HTTPException(status_code=404, detail="Клієнт не знайдений")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
