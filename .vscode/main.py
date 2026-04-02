@@ -1,21 +1,33 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from db import SessionLocal, Base, engine
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
 
 app = FastAPI()
 
-# Створюємо таблиці (якщо їх ще немає)
-Base.metadata.create_all(bind=engine)
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Dependency для отримання сесії
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
 
 @app.get("/")
-def read_root(db: Session = Depends(get_db)):
-    return {"message": "Database connected!"}
+def read_root():
+    return {"message": "database connection successful!"}
+
+@app.post("/users")
+def create_user(user: User):
+    return {"message": "User created", "user": user}
+
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    return {"user_id": user_id}
 
