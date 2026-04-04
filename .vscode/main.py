@@ -1,33 +1,52 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import uvicorn
+from typing import List
+from datetime import datetime
 
-app = FastAPI()
+app = FastAPI(title="Creative ToDo API 🌟")
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class User(BaseModel):
+# Модель задачі
+class Task(BaseModel):
     id: int
-    name: str
-    email: str
+    title: str
+    completed: bool = False
+    priority: int = 1  # 1 - високий, 2 - середній, 3 - низький
+    created_at: datetime = datetime.now()
 
-@app.get("/")
-def read_root():
-    return {"message": "database connection successful!"}
+# База даних у пам'яті
+tasks_db: List[Task] = []
 
-@app.post("/users")
-def create_user(user: User):
-    return {"message": "User created", "user": user}
+# --- API Endpoints ---
 
-@app.get("/users/{user_id}")
-def get_user(user_id: int):
-    return {"user_id": user_id}
+@app.post("/tasks/", response_model=Task)
+def create_task(task: Task):
+    """
+    Користувач додає задачу.
+    Ми автоматично підганяємо дату створення і сортування.
+    """
+    tasks_db.append(task)
+    # Творчість: сортуємо задачі за пріоритетом і датою
+    tasks_db.sort(key=lambda x: (x.priority, x.created_at))
+    return task
+
+@app.get("/tasks/", response_model=List[Task])
+def list_tasks():
+    """
+    Повертаємо задачі у зручному порядку:
+    1. Високий пріоритет
+    2. Новіші задачі
+    """
+    return tasks_db
+
+@app.patch("/tasks/{task_id}/complete", response_model=Task)
+def complete_task(task_id: int):
+    """
+    Позначаємо задачу як завершену.
+    Додаємо маленький “user-friendly” фідбек у API
+    """
+    for task in tasks_db:
+        if task.id == task_id:
+            task.completed = True
+            return task
+    raise HTTPException(status_code=404, detail="Task not found")
 
