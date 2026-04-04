@@ -6,6 +6,7 @@
       "type": "python",
       "request": "launch",
       "program": "uvicorn",
+      "cwd": "${workspaceFolder}\\.vscode",
       "args": [
         "main:app",
         "--reload"

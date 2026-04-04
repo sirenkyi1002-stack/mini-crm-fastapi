@@ -2,10 +2,22 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run FastAPI",
+      "label": "Run FastAPI server",
       "type": "shell",
-      "command": "uvicorn main:app --reload",
-      "group": "build"
+      "command": "uvicorn",
+      "args": [
+        "main:app",
+        "--reload"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\.vscode"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
     }
   ]
 }
+
