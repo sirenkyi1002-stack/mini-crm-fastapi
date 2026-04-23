@@ -1,9 +1,14 @@
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List
 from datetime import datetime
+from routes.clients import router as clients_router
 
 app = FastAPI(title="Creative Tasks API")
+
+# Регіструємо router для clients
+app.include_router(clients_router)
 
 # Модель задачі
 class Task(BaseModel):
