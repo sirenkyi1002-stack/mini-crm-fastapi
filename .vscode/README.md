@@ -2,7 +2,7 @@
 
 ## Features
 - JWT auth
-- PostgreSQL
+- Sqlalchemy
 - CRUD users
 
 ## Run
